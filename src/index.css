@@ -1,0 +1,140 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: radial-gradient(circle at center, #0a0f1a 0%, #020409 100%);
+  background-image: url("./images/blackarchv3.jpg");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
+  background-size: cover;
+  color: #e0f7ff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  z-index: -1;
+}
+
+/* 🔹 Cyber Glass Card */
+.bg-glass {
+  background: rgba(10, 25, 47, 0.8);
+  border: 1px solid rgba(0, 255, 0, 0.2);
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.15), inset 0 0 20px rgba(0, 255, 0, 0.05);
+  transition: all 0.3s ease;
+  border-radius: 14px;
+  z-index: 1;
+}
+
+.bg-glass:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(0, 255, 0, 0.3);
+}
+
+/* 🔸 Nút download kiểu cyber neon */
+.btn-download {
+  background: linear-gradient(90deg, #00ffcc, #0066ff);
+  color: black;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 10px;
+  box-shadow: 0 0 12px rgba(0, 255, 204, 0.4);
+  transition: all 0.3s ease;
+}
+
+.btn-download:hover {
+  background: linear-gradient(90deg, #0066ff, #00ffcc);
+  color: white;
+  box-shadow: 0 0 20px rgba(0, 255, 204, 0.6);
+  transform: translateY(-2px);
+}
+
+.avatar-matrix {
+  position: relative;
+  width: 7rem; /* = w-28 */
+  height: 7rem;
+  margin: 0 auto 1rem;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+/* Ảnh giữ nguyên, chỉ thêm viền xanh hacker nhạt */
+.avatar-matrix img {
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  border: 3px solid rgba(0, 255, 0, 0.5); /* xanh hacker nhạt */
+  box-shadow: 0 0 12px rgba(0, 255, 0, 0.3);
+  display: block;
+}
+
+/* Lưới hacker overlay */
+.avatar-matrix::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background-image:
+    linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px);
+  background-size: 10px 10px;
+  animation: matrixGridMove 6s linear infinite;
+  pointer-events: none;
+}
+
+/* Dải ánh sáng quét dọc (nhẹ) */
+.avatar-matrix::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 255, 0, 0) 0%,
+    rgba(0, 255, 0, 0.15) 50%,
+    rgba(0, 255, 0, 0) 100%
+  );
+  animation: matrixScan 5s linear infinite;
+  pointer-events: none;
+}
+
+/* Animation nhẹ nhàng hơn */
+@keyframes matrixGridMove {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: 10px 10px, 10px 10px;
+  }
+}
+
+@keyframes matrixScan {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+/* 💡 Hiệu ứng sáng nhẹ khi scroll tới */
+.focus-glow {
+  box-shadow: 0 0 25px rgba(0, 255, 204, 0.6),
+              inset 0 0 20px rgba(0, 255, 204, 0.3);
+  transition: box-shadow 0.4s ease-in-out;
+}
+
+/* 🧠 Chữ sáng và dễ đọc */
+h2, h3, p, a {
+  color: #00ffcc;
+}

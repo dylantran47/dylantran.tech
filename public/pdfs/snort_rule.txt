@@ -1,0 +1,115 @@
+
+Snort Rule Structure Guide
+
+A Snort rule is composed of two main parts: the Rule Header and the Rule Options. This document provides detailed insights into each part of the rule to help you create and understand Snort rules effectively.
+
+1. Rule Header
+
+The Rule Header specifies the basic attributes of a rule: the action Snort should take, the network protocol involved, source and destination IP addresses, ports, and traffic direction. The header is the essential part that decides if Snort will process the rule when a packet matches its conditions.
+
+Syntax:
+<action> <protocol> <src IP> <src port> -> <dst IP> <dst port>
+
+Fields:
+
+- Action: Determines what Snort does when a packet matches the rule. Common actions include:
+  - alert: Log the packet and generate an alert.
+  - log: Log the packet without generating an alert.
+  - pass: Ignore the packet (useful for allowing specific traffic).
+  - drop: Block the packet (only available with inline Snort setups).
+
+- Protocol: Specifies which protocol the rule applies to. Supported values include:
+  - tcp: Matches TCP packets.
+  - udp: Matches UDP packets.
+  - icmp: Matches ICMP packets.
+  - ip: Matches packets regardless of protocol.
+
+- Source IP: The IP address of the source device (where the packet originated). Options include:
+  - Specific IP: Defines a single IP address, e.g., 192.168.1.1.
+  - Network: Specifies an entire network using CIDR notation, e.g., 192.168.1.0/24.
+  - any: Matches any source IP address.
+
+- Source Port: Specifies the originating port of the packet. Options:
+  - Specific Port: Matches a single port, e.g., 80.
+  - Port Range: Matches a range of ports, e.g., 1:1024.
+  - any: Matches any port.
+
+- Direction Operator: Defines the direction of traffic to inspect. Options:
+  - ->: Matches traffic from source to destination.
+  - <>: Matches bidirectional traffic (any direction between specified addresses).
+
+- Destination IP: Specifies the IP address of the destination device (where the packet is directed). Options include:
+  - Specific IP: A single IP address.
+  - Network: A range of IP addresses.
+  - any: Any destination IP.
+
+- Destination Port: Specifies the port on the destination device. Options:
+  - Specific Port: Matches a single port.
+  - Port Range: Matches a range of ports.
+  - any: Matches any port.
+
+Example:
+alert tcp $HOME_NET any -> $EXTERNAL_NET 80
+
+This rule alerts on any TCP traffic originating from the home network ($HOME_NET) and directed to the external network ($EXTERNAL_NET) on port 80.
+
+2. Rule Options
+
+The Rule Options section contains additional criteria and configurations for matching packets. Options start and end with parentheses () and are separated by semicolons ;. Each option adds specific conditions to the rule, allowing for more granular detection.
+
+Common Keywords:
+
+- msg: Provides a descriptive message for the alert, displayed in logs.
+  msg:"Possible TCP Flood Attack";
+
+- sid: A unique Snort rule identifier that helps track specific rules. Custom rules typically start at 1000000.
+  sid:1000001;
+
+- rev: Tracks the revision number of a rule. Useful for updating rules without conflicts.
+  rev:1;
+
+- content: Searches for specific data patterns in the packet payload. Essential for detecting specific strings in HTTP requests, commands, etc.
+  content:"GET";
+
+- flags: Matches specific TCP flags. Useful for identifying particular packet types like SYN, ACK, etc.
+  flags:S;
+
+- flow: Checks the direction and state of the packet (only for TCP packets). Examples:
+  - to_client: Matches traffic directed to the client.
+  - to_server: Matches traffic directed to the server.
+  - established: Matches traffic with an established TCP session.
+  flow:to_server,established;
+
+- threshold: Enables rate-based rule detection, allowing Snort to detect repeated patterns by source IP or globally.
+  threshold:type threshold, track by_src, count 5, seconds 10;
+  This example triggers an alert if 5 occurrences happen within 10 seconds from the same source.
+
+Example Rule:
+alert tcp $EXTERNAL_NET any -> $HOME_NET 80 (msg:"Possible TCP Flood Attack"; flags:S; threshold:type threshold, track by_src, count 20, seconds 1; sid:1000001; rev:1;)
+
+Explanation:
+- The rule alerts for TCP SYN packets (flags:S) from the external network to port 80 on the home network.
+- It triggers if 20 such packets are detected within 1 second from the same source, indicating a potential TCP flood attack.
+- The sid and rev ensure rule uniqueness and versioning.
+
+Other examples of rules:
+# Detect ICMP Echo Request (Ping)
+alert icmp any any -> any any (msg:"ICMP Ping Request Detected"; itype:8; sid:1000001; rev:1;)
+
+# Detect ICMP Echo Reply (Ping Response)
+alert icmp any any -> any any (msg:"ICMP Ping Reply Detected"; itype:0; sid:1000002; rev:1;)
+
+# Detect incoming ssh
+alert tcp $EXTERNAL_NET any -> $HOME_NET 22 (msg:"incoming SSH connection!"; flags:S; sid:10000;)
+
+# Detect and alert connecting from inside to outside terrorism
+alert tcp $HOME_NET any -> $EXTERNAL_NET 80 (msg:"terrorism contact!"; content:"terrorism"; nocase; sid:10003;)
+
+# Detect DDOS attack tcp flood
+alert tcp any any -> $HOME_NET 80 (msg:"Possible TCP SYN Flood Attack"; flags:S; detection_filter:track by_src, count 20, seconds 1; sid:1000004; rev:1;)
+
+# Detect DDOS tcp flood if random source IPs
+alert tcp any any -> $HOME_NET any (msg:"Potential SYN flood with randomized source IPs"; flags:S; detection_filter:track by_dst, count 200, seconds 1; sid:1000014; rev:1;)
+
+# Detect backdoor attack vsftp version 2.3.4
+alert tcp any any -> any 21 (msg:"Possible vsftpd 2.3.4 backdoor attempt"; flow:to_server,established; content:"USER "; nocase; content:":)"; distance:0; within:10; sid:1000018; rev:1;)
